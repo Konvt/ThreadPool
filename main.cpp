@@ -21,9 +21,7 @@ int main() {
     Gadgetry::MultiplePool thread_pool;
 
     for (int i=1; i<=10; ++i) {
-        thread_pool.submit([i]() {
-            task(i);
-        });
+        thread_pool.submit(task, i);
     }
 
     thread_pool.shutdown();
