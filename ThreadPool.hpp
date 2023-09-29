@@ -15,6 +15,7 @@
 #include <optional> // std::optional
 #include <type_traits> // std::is_same & std::remove_reference
 
+#include <atomic> // std::atomic
 #include <mutex> // std::mutex
 #include <condition_variable> // std::condition_variable
 #include <future> // std::future
@@ -78,7 +79,7 @@ namespace Gadgetry {
         std::mutex _cond_mtx;
         std::condition_variable _thread_cond;
         ThreadPool::ErrorLevel handler;
-        bool _shutdown, _stop_submit;
+        std::atomic<bool> _shutdown, _stop_submit;
 
     public:
         static constexpr ErrorLevel ignore = ThreadPool::ErrorLevel::ignore;
