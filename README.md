@@ -14,9 +14,9 @@
 
 A straightforward implementation of a C++17 thread pool.
 
-ThreadPool provides a thread pool with a shared task queue, allowing multiple threads to work on a single queue of tasks.
+`ThreadPool` provides a thread pool with a shared task queue, allowing multiple threads to work on a single queue of tasks.
 
-MultiplePool provides a thread pool where each thread has its own task queue. Task dispatching is achieved by calling private method `dispatch`.
+`MultiplePool` provides a thread pool where each thread has its own task queue. Task dispatching is achieved by calling private method `dispatch`.
 
 Each thread pool offers similar interfaces, including two optional exception handling methods. And both of them depend on 'SafeQueue.hpp'.
 
