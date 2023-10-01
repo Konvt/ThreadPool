@@ -106,13 +106,19 @@ namespace Gadgetry {
         static constexpr MultiplePool::ErrorLevel preserve = MultiplePool::ErrorLevel::preserve;
 
         explicit MultiplePool(
-            const std::size_t size = std::thread::hardware_concurrency(),
-            MultiplePool::ErrorLevel handle_type = MultiplePool::preserve
+            const std::size_t size,
+            MultiplePool::ErrorLevel handle_type
         )   : _task_list{size}, _workers{size}, handler{handle_type}, _shutdown{false}, _stop_submit{false} {
             std::size_t i = 0; // thread ID starts from zero
             for (auto& thread : _workers)
                 thread = std::thread(MultiplePool::Worker(this, i++));
         }
+        explicit MultiplePool(const std::size_t size)
+            : MultiplePool(size, MultiplePool::preserve) {} // only initialize size
+        explicit MultiplePool(MultiplePool::ErrorLevel handle_type) // only initialize ErrorLevel
+            : MultiplePool(std::thread::hardware_concurrency(), MultiplePool::preserve) {}
+        MultiplePool(): MultiplePool(std::thread::hardware_concurrency(), MultiplePool::preserve) {} // default
+
         MultiplePool(const MultiplePool&) = delete;
         MultiplePool(MultiplePool&&) = delete;
         MultiplePool& operator=(const MultiplePool&) = delete;
