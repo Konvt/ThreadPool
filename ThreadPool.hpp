@@ -86,13 +86,19 @@ namespace Gadgetry {
         static constexpr ErrorLevel preserve = ThreadPool::ErrorLevel::preserve;
 
         explicit ThreadPool(
-            const std::size_t size = std::thread::hardware_concurrency(),
-            ThreadPool::ErrorLevel handle_type = ThreadPool::preserve
-        )   : _workers{size}, _shutdown{false}, _stop_submit{false} {
-            std::size_t i = 0;
+            const std::size_t size,
+            ThreadPool::ErrorLevel handle_type
+        )   : _workers{size}, handler{handle_type}, _shutdown{false}, _stop_submit{false} {
+            std::size_t i = 0; // thread ID starts from zero
             for (auto& thread : _workers)
                 thread = std::thread(ThreadPool::Worker(this, i++));
         }
+        explicit ThreadPool(const std::size_t size)
+            : ThreadPool(size, ThreadPool::preserve) {} // only initialize size
+        explicit ThreadPool(ThreadPool::ErrorLevel handle_type) // only initialize ErrorLevel
+            : ThreadPool(std::thread::hardware_concurrency(), ThreadPool::preserve) {}
+        ThreadPool(): ThreadPool(std::thread::hardware_concurrency(), ThreadPool::preserve) {} // default
+    
         ThreadPool(const ThreadPool&) = delete;
         ThreadPool(ThreadPool&&) = delete;
         ThreadPool& operator=(const ThreadPool&) = delete;
