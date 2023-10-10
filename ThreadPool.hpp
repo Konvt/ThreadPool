@@ -26,7 +26,7 @@ namespace Gadgetry {
     class bad_submit : public std::exception {
         std::string message;
     public:
-        bad_submit(std::string mes): message{std::move(mes)} {}
+        bad_submit(std::string mes): message {std::move(mes)} {}
         virtual ~bad_submit() noexcept {}
         virtual const char* what() const noexcept { return message.c_str(); }
     };
@@ -44,7 +44,7 @@ namespace Gadgetry {
             ThreadPool *_belongs;
             std::size_t _id;
 
-            Worker(ThreadPool *pool, std::size_t id): _belongs{pool}, _id{id} {}
+            Worker(ThreadPool *pool, std::size_t id): _belongs {pool}, _id {id} {}
             void operator()() {
                 while (!_belongs->_shutdown) {
                     {
@@ -57,13 +57,11 @@ namespace Gadgetry {
                     if (tsk.has_value()) {
                         switch (_belongs->handler) {
                         case ThreadPool::ErrorLevel::ignore:
-                            try { tsk.value()(); }
-                            catch(...) {}
+                            try { tsk.value()(); } catch (...) {}
                             break;
                         case ThreadPool::ErrorLevel::preserve:
                         default:
-                            try { tsk.value()(); }
-                            catch(...) {
+                            try { tsk.value()(); } catch (...) {
                                 _belongs->_error_list.enqueue(std::current_exception());
                             }
                             break;
@@ -88,7 +86,7 @@ namespace Gadgetry {
         explicit ThreadPool(
             const std::size_t size,
             ThreadPool::ErrorLevel handle_type
-        )   : _workers{size}, handler{handle_type}, _shutdown{false}, _stop_submit{false} {
+        ): _workers {size}, handler {handle_type}, _shutdown {false}, _stop_submit {false} {
             std::size_t i = 0; // thread ID starts from zero
             for (auto& thread : _workers)
                 thread = std::thread(ThreadPool::Worker(this, i++));
@@ -98,7 +96,7 @@ namespace Gadgetry {
         explicit ThreadPool(ThreadPool::ErrorLevel handle_type) // only initialize ErrorLevel
             : ThreadPool(std::thread::hardware_concurrency(), ThreadPool::preserve) {}
         ThreadPool(): ThreadPool(std::thread::hardware_concurrency(), ThreadPool::preserve) {} // default
-    
+
         ThreadPool(const ThreadPool&) = delete;
         ThreadPool(ThreadPool&&) = delete;
         ThreadPool& operator=(const ThreadPool&) = delete;
@@ -124,7 +122,7 @@ namespace Gadgetry {
         }
         template<typename F, typename... Args>
         auto submit(F&& tsk, Args&& ...args) -> std::future<std::invoke_result_t<F, Args...>> {
-            if (_stop_submit) throw Gadgetry::bad_submit{"submit tasks to a closed thread pool"};
+            if (_stop_submit) throw Gadgetry::bad_submit {"submit tasks to a closed thread pool"};
 
             using Ret = std::invoke_result_t<F, Args...>;
             std::function<Ret()> func = std::bind(tsk, std::forward<Args>(args)...);

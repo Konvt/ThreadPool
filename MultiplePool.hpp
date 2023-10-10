@@ -26,14 +26,14 @@ namespace Gadgetry {
     class bad_thread_id : public std::exception {
         std::string message;
     public:
-        bad_thread_id(std::string mes): message(std::move(mes)) {}
+        bad_thread_id(std::string mes): message {std::move(mes)} {}
         virtual ~bad_thread_id() noexcept {}
         virtual const char* what() const noexcept { return message.c_str(); }
     };
     class bad_submit : public std::exception {
         std::string message;
     public:
-        bad_submit(std::string mes): message{std::move(mes)} {}
+        bad_submit(std::string mes): message {std::move(mes)} {}
         virtual ~bad_submit() noexcept {}
         virtual const char* what() const noexcept { return message.c_str(); }
     };
@@ -51,7 +51,7 @@ namespace Gadgetry {
             MultiplePool *_belongs;
             std::size_t _id;
 
-            Worker(MultiplePool *pool, std::size_t id): _belongs{pool}, _id{id} {}
+            Worker(MultiplePool *pool, std::size_t id): _belongs {pool}, _id {id} {}
             void operator()() {
                 while (!_belongs->_shutdown) {
                     {
@@ -64,13 +64,15 @@ namespace Gadgetry {
                     if (tsk.has_value()) {
                         switch (_belongs->handler) {
                         case MultiplePool::ErrorLevel::ignore:
-                            try { tsk.value()(); }
-                            catch(...) {}
+                            try {
+                                tsk.value()();
+                            } catch (...) {}
                             break;
                         case MultiplePool::ErrorLevel::preserve:
                         default:
-                            try { tsk.value()(); }
-                            catch(...) {
+                            try {
+                                tsk.value()();
+                            } catch (...) {
                                 _belongs->_error_list.enqueue(std::current_exception());
                             }
                             break;
@@ -108,7 +110,7 @@ namespace Gadgetry {
         explicit MultiplePool(
             const std::size_t size,
             MultiplePool::ErrorLevel handle_type
-        )   : _task_list{size}, _workers{size}, handler{handle_type}, _shutdown{false}, _stop_submit{false} {
+        ): _task_list {size}, _workers {size}, handler {handle_type}, _shutdown {false}, _stop_submit {false} {
             std::size_t i = 0; // thread ID starts from zero
             for (auto& thread : _workers)
                 thread = std::thread(MultiplePool::Worker(this, i++));
@@ -152,7 +154,7 @@ namespace Gadgetry {
         template<typename F, typename... Args>
         auto submit(std::optional<std::size_t> thread_id, F&& tsk, Args&& ...args)
             -> std::future<std::invoke_result_t<F, Args...>> {
-            if (_stop_submit) throw Gadgetry::bad_submit{"submit tasks to a closed thread pool"};
+            if (_stop_submit) throw Gadgetry::bad_submit {"submit tasks to a closed thread pool"};
 
             using Ret = std::invoke_result_t<F, Args...>;
             std::function<Ret()> func = std::bind(std::forward<F>(tsk), std::forward<Args>(args)...);
